@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var api = require('instagram-node').instagram();
+var http = require('http');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -56,5 +58,27 @@ app.use(function(err, req, res, next) {
   });
 });
 
+
+exports.authorize_user = function(req, res) {
+  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['likes'], state: 'a state' }));
+};
+
+exports.handleauth = function(req, res) {
+  api.authorize_user(req.query.code, redirect_uri, function(err, result) {
+    if (err) {
+      console.log(err.body);
+      res.send("Didn't work");
+    } else {
+      console.log('Yay! Access token is ' + result.access_token);
+      res.send('You made it!!');
+    }
+  });
+};
+
+
+
+http.createServer(app).listen(app.get('port'), function(){
+  console.log("Express server listening on port " + app.get('port'));
+});
 
 module.exports = app;
