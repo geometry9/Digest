@@ -6,6 +6,9 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var api = require('instagram-node').instagram();
 var http = require('http');
+var cookieParser = require('cookie-parser');
+
+
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -23,7 +26,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(cookieParser());
 app.use('/', routes);
 app.use('/users', users);
 
@@ -57,23 +60,6 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
-
-exports.authorize_user = function(req, res) {
-  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['likes'], state: 'a state' }));
-};
-
-exports.handleauth = function(req, res) {
-  api.authorize_user(req.query.code, redirect_uri, function(err, result) {
-    if (err) {
-      console.log(err.body);
-      res.send("Didn't work");
-    } else {
-      console.log('Yay! Access token is ' + result.access_token);
-      res.send('You made it!!');
-    }
-  });
-};
 
 
 
