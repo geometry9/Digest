@@ -3,8 +3,6 @@ var router = express.Router();
 var api = require('instagram-node').instagram();
 var User = require('../UserModel');
 
-
-
 api.use({
   client_id: 	"04e0540640be4c6bbc9237420daae3df",
   client_secret: "c9747a61e388437580faa61bacc10b6f"
@@ -19,7 +17,7 @@ router.get('/', function(req, res, next) {
 
 // This is where you would initially send users to authorize
 router.get('/authorize_user', function(req, res) {
-  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['likes'], state: 'a state' }));
+  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['likes', 'public_content', 'basic'] }));
 });
 // This is your redirect URI
 router.get('/handleauth', function(req, res) {
@@ -29,12 +27,17 @@ router.get('/handleauth', function(req, res) {
       console.log(err.body);
       res.send("There was a problem logging in.");
     } else {
+      api.use({
+        client_id: 	"04e0540640be4c6bbc9237420daae3df",
+        client_secret: "c9747a61e388437580faa61bacc10b6f",
+        access_token: result.access_token
+      });
       var refToken = '1234';
       //if user doesn't exist && ref_token;
-      User.count({user_id: result.user.id}, function (err, count){
+      User.count({ user_id: result.user.id }, function (err, count){
           if(count > 0){
               console.log('woah one user');
-              res.redirect('/dashboard?u='+result.user.id);
+              res.redirect('/dashboard?a='+result.access_token);
           }else{
             //create a new user
             console.log('Saving user...');
@@ -48,17 +51,26 @@ router.get('/handleauth', function(req, res) {
             // save the user
             newUser.save(function(err) {
               if (err) throw err;
-              res.redirect('/dashboard?u='+result.user.id);
+              res.redirect('/dashboard?a='+result.access_token);
             });
           }
       });
     }
   });
 
-  router.get('/dashboard', function(req, res) {
-    var user = User.findOne({ 'user_id': req.query.u });
-    res.cookie('ref_token', user.ref_token);
-    res.render('tags_input', { userName: user.username });
+  router.get('/start_tag_likes', function(req, res){
+
+  });
+
+  router.get('/dashboard?*', function(req, res) {
+    User.findOne({ 'access_token': req.query.a }, function(err, user){
+      if (err) throw err;
+      api.user_self_liked({count: 15}, function(err, medias, pagination, remaining, limit) {
+        res.cookie('ref_token', user.ref_token);
+        res.render('tags_input', { userName: user.username, recent_tags: medias });
+      });
+    });
+
   });
 });
 

@@ -8,7 +8,10 @@ block tag_inputs
   input(type="text")
   h2 Max amount of likes:
   input(type="text") 
-
-block recent_likes
   h1 Recent Likes
-  div
+  - if(recent_tags.length)
+    each pic, index in recent_tags
+      div
+        h1= pic.user.username
+        img(src="#{pic.images.low_resolution.url}")
+  
