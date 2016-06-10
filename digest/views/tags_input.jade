@@ -2,13 +2,18 @@ extends dashboard
 
 block tag_inputs
   h1= userName
-  h2 Enter tags to like:
-  input(type="text")
-  h2 Time between likes:
-  input(type="text")
-  h2 Max amount of likes:
-  input(type="text") 
-  h1 Recent Likes
+  form(action="/update_user_preferences" method="POST")
+    fieldset
+      h2 Enter tags to like:
+      input(type="text" name="user_tags")
+      h2 Time between likes:
+      input(type="text" name="user_time_between_likes")
+      h2 Max amount of likes:
+      input(type="text" name="user_max_likes") 
+      h1 Recent Likes
+    button(type="submit" class="submit-user-pref") Update
+  a(class="submit-bot-run", href="/spawn") Run
+  a(class="submit-bot-stop") Stop
   - if(recent_tags.length)
     each pic, index in recent_tags
       div

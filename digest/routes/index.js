@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var api = require('instagram-node').instagram();
 var User = require('../UserModel');
+var crypto =  require('crypto-js');
 
 api.use({
   client_id: 	"04e0540640be4c6bbc9237420daae3df",
@@ -32,12 +33,11 @@ router.get('/handleauth', function(req, res) {
         client_secret: "c9747a61e388437580faa61bacc10b6f",
         access_token: result.access_token
       });
-      var refToken = '1234';
+      var refToken = crypto.AES.encrypt(result.access_token, 'Castles in the snow');;
       //if user doesn't exist && ref_token;
       User.count({ user_id: result.user.id }, function (err, count){
           if(count > 0){
-              console.log('woah one user');
-              res.redirect('/dashboard?a='+result.access_token);
+              res.redirect('/dashboard?token=' + refToken);
           }else{
             //create a new user
             console.log('Saving user...');
@@ -51,22 +51,62 @@ router.get('/handleauth', function(req, res) {
             // save the user
             newUser.save(function(err) {
               if (err) throw err;
-              res.redirect('/dashboard?a='+result.access_token);
+              res.redirect('/dashboard?token=' + refToken);
             });
           }
       });
     }
   });
 
-  router.get('/start_tag_likes', function(req, res){
+  router.post('/update_user_preferences', function(req, res){
+    var decrypt = crypto.AES.decrypt(req.cookies.ref_token.toString(), 'Castles in the snow');
+    var plaintext = decrypt.toString(crypto.enc.Utf8);
+    User.update({access_token: plaintext}, {
+      settings: {
+        tags: [req.body.user_tags],
+        time_limit: req.body.user_time_between_likes
+      }
+    }, function(){
+      res.redirect('/dashboard');
+    });
+  });
+
+  router.get('/spawn', function(req, res){
+    var decrypt = crypto.AES.decrypt(req.cookies.ref_token.toString(), 'Castles in the snow');
+    var plaintext = decrypt.toString(crypto.enc.Utf8);
+    User.findOne({ 'ref_token': plaintext }, function(err, user){
+      api.tag_media_recent(user.settings.tags[0], function(err, medias, pagination, remaining, limit) {
+        res.render('bot_likes', { current_tag_likes: medias });
+      });
+    });
+
 
   });
 
-  router.get('/dashboard?*', function(req, res) {
+  router.get('/stop', function(req, res){
+
+  });
+
+  router.post('/update_user_preferences', function(req, res){
+    User.update({username: '_slaughterhome'}, {
+      settings: {
+        tags: [req.body.user_tags],
+        time_limit: req.body.user_time_between_likes
+      }
+    }, function(){
+      res.redirect('/dashboard');
+    });
+  });
+
+  router.get('/dashboard', function(req, res) {
+    var token = req.params.token;
+    res.cookie('ref_token', token);
+    var decrypt = crypto.AES.decrypt(token.toString(), 'Castles in the snow');
+    var plaintext = decrypt.toString(crypto.enc.Utf8);
     User.findOne({ 'access_token': req.query.a }, function(err, user){
       if (err) throw err;
       api.user_self_liked({count: 15}, function(err, medias, pagination, remaining, limit) {
-        res.cookie('ref_token', user.ref_token);
+
         res.render('tags_input', { userName: user.username, recent_tags: medias });
       });
     });
