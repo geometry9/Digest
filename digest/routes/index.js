@@ -99,15 +99,18 @@ router.get('/handleauth', function(req, res) {
   });
 
   router.get('/dashboard', function(req, res) {
-    var token = req.params.token;
+    var token = req.query.token;
+    console.log(token);
     res.cookie('ref_token', token);
-    var decrypt = crypto.AES.decrypt(token.toString(), 'Castles in the snow');
-    var plaintext = decrypt.toString(crypto.enc.Utf8);
-    User.findOne({ 'access_token': req.query.a }, function(err, user){
+    var encrypted = crypto.AES.encrypt(token, 'Castles in the snow').toString();
+    User.findOne({ 'access_token': encrypted }, function(err, user){
       if (err) throw err;
       api.user_self_liked({count: 15}, function(err, medias, pagination, remaining, limit) {
-
-        res.render('tags_input', { userName: user.username, recent_tags: medias });
+        if(user)
+          res.render('tags_input', { userName: user.username, recent_tags: medias });
+        else {
+          res.render('tags_input', { userName: 'ANON', recent_tags: medias });
+        }
       });
     });
 
