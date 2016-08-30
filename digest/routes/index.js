@@ -72,7 +72,8 @@ router.get('/handleauth', function(req, res) {
   });
 
   router.get('/spawn', function(req, res){
-    var decrypt = crypto.AES.decrypt(req.cookies.ref_token.toString(), 'Castles in the snow');
+    var token = req.cookies.ref_token;
+    var decrypt = crypto.AES.decrypt(token, 'Castles in the snow');
     var plaintext = decrypt.toString(crypto.enc.Utf8);
     User.findOne({ 'ref_token': plaintext }, function(err, user){
       api.tag_media_recent(user.settings.tags[0], function(err, medias, pagination, remaining, limit) {
@@ -100,7 +101,6 @@ router.get('/handleauth', function(req, res) {
 
   router.get('/dashboard', function(req, res) {
     var token = req.query.token;
-    console.log(token);
     res.cookie('ref_token', token);
     var encrypted = crypto.AES.encrypt(token, 'Castles in the snow').toString();
     User.findOne({ 'access_token': encrypted }, function(err, user){
