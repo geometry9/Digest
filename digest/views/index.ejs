@@ -10,7 +10,7 @@
 
     <!-- Compiled and minified JavaScript -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-
+    <script src="https://app.userapp.io/js/userapp.client.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
   </head>
   <body>
@@ -46,6 +46,16 @@
                 <label for="icon_telephone">Password</label>
               </div>
             </div>
+            <div class="row">
+              <div class="col s12">
+                <button onclick="socialLogin('google')">Log in with Google</button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col s12">
+                <button onclick="socialLogin('facebook')">Log in with Facebook</button>
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -54,8 +64,25 @@
       </div>
     </div>
     <script>
+      function socialLogin(providerId) {
+      	var redirectUrl = window.location.protocol+'//'+window.location.host+window.location.pathname;
+      	UserApp.OAuth.getAuthorizationUrl({ provider_id: providerId, redirect_uri: redirectUrl },
+      		function(error, result) {
+      			if (!error) {
+      				window.location.href = result.authorization_url;
+      			}
+      		}
+      	);
+      }
+
+      var matches = window.location.href.match(/ua_token=([a-z0-9_-]+)/i);
+      if (matches && matches.length == 2) {
+      	var token = matches[1];
+      	UserApp.setToken(token);
+      	onLoginSuccessful && onLoginSuccessful();
+      }
       $(document).ready(function(){
-        // the "href" attribute of .modal-trigger must specify the modal ID that wants to be triggered
+        UserApp.initialize({ appId: "57c9a3a52ce8c" });
         $('.modal-trigger').leanModal();
       });
     </script>
