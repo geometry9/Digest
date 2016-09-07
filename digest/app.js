@@ -37,7 +37,7 @@ app.use(function(req, res, next) {
   next(err);
 });
 
-// error handlers
+app.set('port', process.env.PORT || 3000);
 
 // development error handler
 // will print stacktrace
