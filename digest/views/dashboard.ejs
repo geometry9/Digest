@@ -12,17 +12,71 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://app.userapp.io/js/userapp.client.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+    <script src="/javascripts/cookies.js"></script>
+    <script src="/javascripts/user.js"></script>
+    <script src="/javascripts/tags.js"></script>
   </head>
   <body>
-    <ul id="slide-out" class="side-nav fixed">
-      <li><a href="#!">Dashboard</a></li>
+    <div class="navbar-fixed">
+      <nav>
+        <div class="nav-wrapper">
+          <a href="#" data-activates="slide-out" class="button-collapse show-on-large"><i class="material-icons">menu</i>Menu</a>
+          <a href="#" class="brand-logo">Insta Poop</a>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a class="modal-trigger btn" href="#">Log Out</a></li>
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <ul id="slide-out" class="side-nav">
+      <li class="active"><a href="#!">Dashboard</a></li>
       <li><a href="#!">Analytics</a></li>
       <li><a href="#!">Account</a></li>
     </ul>
-    <a href="#" data-activates="slide-out" class="button-collapse"><i class="material-icons">menu</i></a>
+    <div class="container">
+      <div class="col s12 m8 offset-m2 l6 offset-l3">
+        <div class="card-panel grey lighten-5 z-depth-1">
+          <div class="row valign-wrapper">
+            <div class="col s2">
+              <img src="img/user.png" alt="" class="circle responsive-img"> <!-- notice the "circle" class -->
+            </div>
+            <div class="col s10">
+              <h3> Welcome User! </h3>
+              <span class="black-text">
+                Find some stuff here in your dashboard;
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <form action="/update_user_preferences" method="POST">
+        <fieldset>
+          <label>Enter tags to like:</label>
+          <div data-tags-input-name="tag" id="tagBox"></div>
+          <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+            <i class="material-icons right">send</i>
+          </button>
+        </fieldset>
+
+      </form>
+      <p>
+        - if(recent_tags.length)
+          each pic, index in recent_tags
+            div
+              h1= pic.user.username
+              img(src="#{pic.images.low_resolution.url}")
+      </p>
+    </div>
     <script>
       $(document).ready(function(){
+        $('.button-collapse').sideNav({
+            menuWidth: 300, // Default is 240
+            edge: 'left', // Choose the horizontal origin
+            closeOnClick: true // Closes side-nav on <a> clicks, useful for Angular/Meteor
+          }
+        );
         UserApp.initialize({ appId: "57c9a3a52ce8c" });
+        $("#tagBox").tagging({'edit-on-delete': false});
       });
     </script>
   </body>

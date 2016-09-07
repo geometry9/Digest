@@ -32,3 +32,24 @@ var login = UserApp.User.login({ "login": "timothy", "password": "v3rYsecre7!" }
 var logout = UserApp.User.logout(function(error, result){
     // Clear cookie, redirect to login page, etc.
 });
+
+var token = Cookies.get("ua_session_token");
+var getCookie =  function () {
+   if (token) {
+      // Yes, there is
+      UserApp.setToken(token);
+
+      // Get the logged in user
+      UserApp.User.get({ user_id: "self" }, function(error, user) {
+          if (error) {
+              // The token has probably expired, go to the login page
+              window.location.href = "/";
+          } else {
+              // Success, the profile is at user[0]
+          }
+      });
+  } else {
+      // No, redirect the user to the login page
+      window.location.href = "/";
+  }
+}

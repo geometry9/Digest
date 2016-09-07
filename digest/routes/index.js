@@ -3,6 +3,27 @@ var router = express.Router();
 var api = require('instagram-node').instagram();
 var User = require('../UserModel');
 var crypto =  require('crypto-js');
+var passport = require('passport');
+var UserAppStrategy = require('passport-userapp').Strategy;
+
+
+
+passport.use(new UserAppStrategy({
+        appId: '57c9a3a52ce8c'
+    },
+    function (userprofile, done) {
+        Users.findOrCreate(userprofile, function(err,user) {
+            if(err) return done(err);
+            return done(null, user);
+        });
+    }
+));
+
+router.post('/api/call', passport.authenticate('userapp'),
+  function(req, res) {
+    // Return some relevant data, for example the logged in user, articles, etc.
+    res.send({ user: req.user });
+  });
 
 api.use({
   client_id: 	"04e0540640be4c6bbc9237420daae3df",
@@ -14,6 +35,14 @@ var redirect_uri = "http://local.digest.com:3000/handleauth";
 /* GET home page. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Instatool' });
+});
+
+router.get('/dashboard', function(req, res) {
+  res.render('dashboard', { title: 'Instatool' });
+});
+router.post('/update_user_preferences', function(req, res){
+  var tags = req.body.user_tags;
+  console.log('ALL THE TAGS', tags);
 });
 
 // This is where you would initially send users to authorize
@@ -58,18 +87,7 @@ router.get('/handleauth', function(req, res) {
     }
   });
 
-  router.post('/update_user_preferences', function(req, res){
-    var decrypt = crypto.AES.decrypt(req.cookies.ref_token.toString(), 'Castles in the snow');
-    var plaintext = decrypt.toString(crypto.enc.Utf8);
-    User.update({access_token: plaintext}, {
-      settings: {
-        tags: [req.body.user_tags],
-        time_limit: req.body.user_time_between_likes
-      }
-    }, function(){
-      res.redirect('/dashboard');
-    });
-  });
+
 
   router.get('/spawn', function(req, res){
     var token = req.cookies.ref_token;
@@ -97,23 +115,6 @@ router.get('/handleauth', function(req, res) {
     }, function(){
       res.redirect('/dashboard');
     });
-  });
-
-  router.get('/dashboard', function(req, res) {
-    var token = req.query.token;
-    res.cookie('ref_token', token);
-    var encrypted = crypto.AES.encrypt(token, 'Castles in the snow').toString();
-    User.findOne({ 'access_token': encrypted }, function(err, user){
-      if (err) throw err;
-      api.user_self_liked({count: 15}, function(err, medias, pagination, remaining, limit) {
-        if(user)
-          res.render('tags_input', { userName: user.username, recent_tags: medias });
-        else {
-          res.render('tags_input', { userName: 'ANON', recent_tags: medias });
-        }
-      });
-    });
-
   });
 });
 
