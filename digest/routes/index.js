@@ -5,8 +5,9 @@ var User = require('../UserModel');
 var crypto =  require('crypto-js');
 var passport = require('passport');
 var UserAppStrategy = require('passport-userapp').Strategy;
+var cors = require('cors');
 
-
+router.use(cors());
 
 passport.use(new UserAppStrategy({
         appId: '57c9a3a52ce8c'
@@ -38,16 +39,36 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/dashboard', function(req, res) {
-  res.render('dashboard', { title: 'Instatool' });
+  api.use({
+    client_id: 	"04e0540640be4c6bbc9237420daae3df",
+    client_secret: "c9747a61e388437580faa61bacc10b6f",
+  });
+  res.render('dashboard', {
+    title: 'Instatool',
+    insta_auth_link: api.get_authorization_url(redirect_uri, { scope: ['likes', 'public_content', 'basic'] })
+  });
 });
 router.post('/update_user_preferences', function(req, res){
-  var tags = req.body.user_tags;
-  console.log('ALL THE TAGS', tags);
+  var token = req.body['token'];
+  var tags = req.body['tags[]'];
+  User.findOne({ 'ref_token': token }, function(err, user){
+    api.use({
+      client_id: 	"04e0540640be4c6bbc9237420daae3df",
+      client_secret: "c9747a61e388437580faa61bacc10b6f",
+      access_token: user.access_token || ''
+    });
+    console.log(err,user)
+    api.tag_media_recent(tags[0], function(err, medias, pagination, remaining, limit) {
+      console.log(err,medias);
+      res.render('dashboard', { current_tag_likes: medias, insta_auth_link: '' });
+    });
+  });
+
 });
 
 // This is where you would initially send users to authorize
 router.get('/authorize_user', function(req, res) {
-  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['likes', 'public_content', 'basic'] }));
+  res.redirect();
 });
 // This is your redirect URI
 router.get('/handleauth', function(req, res) {
@@ -104,17 +125,6 @@ router.get('/handleauth', function(req, res) {
 
   router.get('/stop', function(req, res){
 
-  });
-
-  router.post('/update_user_preferences', function(req, res){
-    User.update({username: '_slaughterhome'}, {
-      settings: {
-        tags: [req.body.user_tags],
-        time_limit: req.body.user_time_between_likes
-      }
-    }, function(){
-      res.redirect('/dashboard');
-    });
   });
 });
 

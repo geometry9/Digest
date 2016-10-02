@@ -1,3 +1,5 @@
+import Cookies from 'cookies-js';
+
 var signup = UserApp.User.save({
     "first_name": "Timothy",
     "email": "timothy.johansson@userapp.io",
@@ -53,3 +55,5 @@ var getCookie =  function () {
       window.location.href = "/";
   }
 }
+
+export {signup, login, logout, token}

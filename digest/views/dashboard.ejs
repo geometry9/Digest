@@ -12,9 +12,8 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://app.userapp.io/js/userapp.client.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-    <script src="/javascripts/cookies.js"></script>
-    <script src="/javascripts/user.js"></script>
-    <script src="/javascripts/tags.js"></script>
+    <script src="/javascripts/src/lib/tags.js"></script>
+    <script src="/javascripts/bundle.js"></script>
   </head>
   <body>
     <div class="navbar-fixed">
@@ -45,6 +44,9 @@
               <span class="black-text">
                 Find some stuff here in your dashboard;
               </span>
+              <a href="<%= insta_auth_link %>" class="btn waves-effect waves-light connect-insta" name="action">Connect to Instagram
+                <i class="material-icons right">send</i>
+              </a>
             </div>
           </div>
         </div>
@@ -52,19 +54,22 @@
       <form action="/update_user_preferences" method="POST">
         <fieldset>
           <label>Enter tags to like:</label>
-          <div data-tags-input-name="tag" id="tagBox"></div>
-          <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+          <div data-tags-input-name="tags" id="tagBox"></div>
+          <button class="btn waves-effect waves-light submit-tags" type="submit" name="action">Submit
             <i class="material-icons right">send</i>
           </button>
+          <input class="token-string" type="hidden" name="token" value="">
         </fieldset>
 
       </form>
       <p>
-        - if(recent_tags.length)
-          each pic, index in recent_tags
-            div
-              h1= pic.user.username
-              img(src="#{pic.images.low_resolution.url}")
+        <div class="result"></div>
+        <% if(typeof current_tag_likes !== 'undefined') { %>
+          <% current_tag_likes.forEach(function(user){ %>
+              <h3> <%= user.user.username %> </h3>
+              <img src="<%= user.images.low_resolution.url %>"> </img>
+          <% }); %>
+        <% } %>
       </p>
     </div>
     <script>
@@ -75,8 +80,10 @@
             closeOnClick: true // Closes side-nav on <a> clicks, useful for Angular/Meteor
           }
         );
+        $('.token-string').attr('value', window.location.search.replace("?token=", ""))
         UserApp.initialize({ appId: "57c9a3a52ce8c" });
-        $("#tagBox").tagging({'edit-on-delete': false});
+        var $tagbox = $("#tagBox").tagging({'edit-on-delete': false});
+
       });
     </script>
   </body>

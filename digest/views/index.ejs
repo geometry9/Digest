@@ -12,9 +12,6 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="https://app.userapp.io/js/userapp.client.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-    <script src="/javascripts/src/libs/cookies.js"></script>
-    <script src="/javascripts/src/user.js"></script>
-    <script src="/javascripts/entry.js"></script>
   </head>
   <body>
     <div class="navbar-fixed">
@@ -68,7 +65,6 @@
       </div>
     </div>
     <script>
-      var app = new App();
       function socialLogin(providerId) {
         console.log(providerId);
         var redirectUrl = window.location.protocol+'//'+window.location.host+window.location.pathname;
