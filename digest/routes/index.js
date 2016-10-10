@@ -6,17 +6,19 @@ var crypto =  require('crypto-js');
 var passport = require('passport');
 var UserAppStrategy = require('passport-userapp').Strategy;
 var cors = require('cors');
+var lodash = require('lodash');
+var cookieParser = require('cookie-parser')
+
 
 router.use(cors());
+router.use(cookieParser());
+
 
 passport.use(new UserAppStrategy({
         appId: '57c9a3a52ce8c'
     },
     function (userprofile, done) {
-        Users.findOrCreate(userprofile, function(err,user) {
-            if(err) return done(err);
-            return done(null, user);
-        });
+      return done(null, userprofile);
     }
 ));
 
@@ -38,30 +40,44 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Instatool' });
 });
 
-router.get('/dashboard', function(req, res) {
-  api.use({
-    client_id: 	"04e0540640be4c6bbc9237420daae3df",
-    client_secret: "c9747a61e388437580faa61bacc10b6f",
-  });
-  res.render('dashboard', {
-    title: 'Instatool',
-    insta_auth_link: api.get_authorization_url(redirect_uri, { scope: ['likes', 'public_content', 'basic'] })
-  });
-});
-router.post('/update_user_preferences', function(req, res){
-  var token = req.body['token'];
-  var tags = req.body['tags[]'];
-  User.findOne({ 'ref_token': token }, function(err, user){
+router.get('/dashboard',
+  function(req, res) {
+    //check if user needs instagram link or not.
     api.use({
       client_id: 	"04e0540640be4c6bbc9237420daae3df",
       client_secret: "c9747a61e388437580faa61bacc10b6f",
-      access_token: user.access_token || ''
     });
-    console.log(err,user)
-    api.tag_media_recent(tags[0], function(err, medias, pagination, remaining, limit) {
-      console.log(err,medias);
-      res.render('dashboard', { current_tag_likes: medias, insta_auth_link: '' });
+    res.render('dashboard', {
+      title: 'Instatool',
+      insta_auth_link: api.get_authorization_url(redirect_uri, { scope: ['likes', 'public_content', 'basic'] })
     });
+});
+router.post('/update_user_preferences', function(req, res){
+  var token = req.body['token'];
+  var tags = (typeof req.body['tags[]'] !== "string" ) ? req.body['tags[]'] : [req.body['tags[]']];
+
+  var mediasResponse = [];
+  User.findOne({ 'ref_token': token }, function(err, user){
+    if(user){
+      api.use({
+        client_id: 	"04e0540640be4c6bbc9237420daae3df",
+        client_secret: "c9747a61e388437580faa61bacc10b6f",
+        access_token: user.access_token || ''
+      });
+      for (var i = 0; i < tags.length; i++) {
+        if(i === (tags.length - 1)){
+          api.tag_media_recent(tags[i], function(err, medias, pagination, remaining, limit) {
+            mediasResponse = lodash.concat(mediasResponse,medias);
+            res.render('dashboard', { current_tag_likes: mediasResponse, insta_auth_link: '' });
+          });
+        }else{
+          api.tag_media_recent(tags[i], function(err, medias, pagination, remaining, limit) {
+            mediasResponse = lodash.concat(mediasResponse,medias);
+          });
+        }
+      }
+    }
+
   });
 
 });
@@ -70,6 +86,8 @@ router.post('/update_user_preferences', function(req, res){
 router.get('/authorize_user', function(req, res) {
   res.redirect();
 });
+
+
 // This is your redirect URI
 router.get('/handleauth', function(req, res) {
   api.authorize_user(req.query.code, redirect_uri, function(err, result) {
@@ -85,8 +103,15 @@ router.get('/handleauth', function(req, res) {
       });
       var refToken = crypto.AES.encrypt(result.access_token, 'Castles in the snow');;
       //if user doesn't exist && ref_token;
-      User.count({ user_id: result.user.id }, function (err, count){
-          if(count > 0){
+      User.findOne({ user_id: result.user.id }, function (err, user){
+          if (err) { return next(err); }
+          if(user){
+              user.ref_token = refToken;
+              user.access_token = result.access_token;
+              user.save(function(err) {
+                if (err) { return next(err); }
+              });
+              res.cookie('digest',refToken, { maxAge: 900000, httpOnly: true });
               res.redirect('/dashboard?token=' + refToken);
           }else{
             //create a new user
@@ -101,6 +126,7 @@ router.get('/handleauth', function(req, res) {
             // save the user
             newUser.save(function(err) {
               if (err) throw err;
+              res.cookie('digest',refToken, { maxAge: 900000, httpOnly: true });
               res.redirect('/dashboard?token=' + refToken);
             });
           }

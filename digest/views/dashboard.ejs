@@ -65,10 +65,24 @@
       <p>
         <div class="result"></div>
         <% if(typeof current_tag_likes !== 'undefined') { %>
-          <% current_tag_likes.forEach(function(user){ %>
-              <h3> <%= user.user.username %> </h3>
-              <img src="<%= user.images.low_resolution.url %>"> </img>
+          <div class="row">
+          <% current_tag_likes.forEach(function(image){ %>
+            <div class="col s12 m4">
+              <div class="card small">
+                <div class="card-image">
+                  <img src="<%= image.images.low_resolution.url %>">
+                  <span class="card-title"><%= image.user.username %></span>
+                </div>
+                <div class="card-content">
+                  <p>
+                    <input type="checkbox" id="instagram-like-batch-<%= image.id %>" />
+                    <label for="instagram-like-batch-<%= image.id %>">Select</label>
+                  </p>
+                </div>
+              </div>
+            </div>
           <% }); %>
+          </div>
         <% } %>
       </p>
     </div>
