@@ -36,6 +36,9 @@ api.use({
 var redirect_uri = "http://local.digest.com:3000/handleauth";
 
 /* GET home page. */
+router.get('/logout', function(req, res, next) {
+  res.render('index', { title: 'Instatool' });
+});
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Instatool' });
 });
@@ -53,7 +56,7 @@ router.get('/dashboard',
     });
 });
 router.post('/update_user_preferences', function(req, res){
-  var token = req.body['token'];
+  var token = req.body['token'] || req.cookies.digest
   var tags = (typeof req.body['tags[]'] !== "string" ) ? req.body['tags[]'] : [req.body['tags[]']];
 
   var mediasResponse = [];
@@ -101,18 +104,20 @@ router.get('/handleauth', function(req, res) {
         client_secret: "c9747a61e388437580faa61bacc10b6f",
         access_token: result.access_token
       });
-      var refToken = crypto.AES.encrypt(result.access_token, 'Castles in the snow');;
+      var refToken = crypto.AES.encrypt(result.access_token, 'Castles in the snow');
+      res.cookie('digest',refToken.toString(), { maxAge: 900000, httpOnly: true });
+
       //if user doesn't exist && ref_token;
       User.findOne({ user_id: result.user.id }, function (err, user){
           if (err) { return next(err); }
+
           if(user){
               user.ref_token = refToken;
               user.access_token = result.access_token;
               user.save(function(err) {
                 if (err) { return next(err); }
+                res.redirect('/dashboard?token=' + refToken);
               });
-              res.cookie('digest',refToken, { maxAge: 900000, httpOnly: true });
-              res.redirect('/dashboard?token=' + refToken);
           }else{
             //create a new user
             console.log('Saving user...');
@@ -126,7 +131,6 @@ router.get('/handleauth', function(req, res) {
             // save the user
             newUser.save(function(err) {
               if (err) throw err;
-              res.cookie('digest',refToken, { maxAge: 900000, httpOnly: true });
               res.redirect('/dashboard?token=' + refToken);
             });
           }
