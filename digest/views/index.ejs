@@ -2,11 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>InstaMess</title>
+    <title>Gathr</title>
     <meta name="description" content="">
     <meta name="author" content="">
     <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Julius+Sans+One|Philosopher|Poiret+One|Titan+One|Work+Sans" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <link rel="stylesheet" href="stylesheets/style.css">
 
     <!-- Compiled and minified JavaScript -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -17,8 +19,11 @@
   <body>
     <div class="navbar-fixed">
       <nav>
-        <div class="nav-wrapper">
-          <a href="#" class="brand-logo">Gathr</a>
+        <div class="nav-wrapper blue-grey lighten-1">
+          <span class="logo"></span>
+          <a href="#" class="brand-logo">
+            Gathr
+          </a>
           <ul id="nav-mobile" class="right hide-on-med-and-down">
             <li class="active"><a href="/home">Home</a></li>
             <li><a href="/how-it-works">How it Works</a></li>
@@ -30,6 +35,20 @@
         </div>
       </nav>
     </div>
+    <header>
+      <div class="title">
+        <span class="logo"></span>
+        <h1>Gathr</h1>
+        <p>Connect with a broader audience with targeted reach to amplify your brand.</p>
+        <a class="modal-trigger btn" href="#modal1">Try now!</a>
+      </div>
+    </header>
+
+    <main>
+      <h2>Information about Cheese Curds</h2>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Culpa facilis, labore debitis nesciunt ipsam odio corporis architecto reiciendis voluptas ab quibusdam ratione rerum tempore voluptatibus libero cumque dignissimos vero hic!</p>
+    </main>
+
   <!-- Modal Structure -->
     <div id="modal1" class="modal">
       <div class="modal-content">
@@ -159,6 +178,7 @@
           e.preventDefault();
         })
         $('.modal-trigger').leanModal();
+        $('.carousel.carousel-slider').carousel({full_width: true});
       });
     </script>
   </body>

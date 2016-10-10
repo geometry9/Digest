@@ -37,7 +37,9 @@ var redirect_uri = "http://local.digest.com:3000/handleauth";
 
 /* GET home page. */
 router.get('/logout', function(req, res, next) {
-  res.render('index', { title: 'Instatool' });
+  res.clearCookie('ua_session_token');
+  res.clearCookie('digest');
+  res.redirect('/');
 });
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'Instatool' });
