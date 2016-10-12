@@ -140,8 +140,15 @@
       }
       function userSignup(){
         var signup = UserApp.User.save({
-            "login": $('#signup-name').val(),
-            "password": $('#signup-password').val(),
+            login: $('#signup-email').val(),
+            first_name: $('#signup-first_name').val(),
+            last_name: $('#signup-last_name').val(),
+            email: $('#signup-email').val(),
+            password: $('#signup-password').val(),
+            subscription: {
+              price_list_id: 'imMAkURITbKgFOc0E1BPxA',
+              plan_id: '59yd9h5pTw6j7j30EhX8Mg'
+            }
         }, function(error, result){
             console.log(error, result);
             console.log('There was an error');
